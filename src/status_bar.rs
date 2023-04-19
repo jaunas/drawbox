@@ -2,14 +2,15 @@ use sdl2::{
     pixels::Color,
     rect::Rect,
     render::{Canvas, TextureQuery},
-    ttf::Font,
     video::Window,
 };
+
+use crate::{fonts::Fonts, view::View};
 
 const HEIGHT: u32 = 20;
 
 pub struct StatusBar {
-    last_mouse_position: (i32, i32),
+    pub last_mouse_position: (i32, i32),
 }
 
 impl StatusBar {
@@ -18,19 +19,27 @@ impl StatusBar {
             last_mouse_position: (0, 0),
         }
     }
+}
 
-    pub fn draw(&mut self, canvas: &mut Canvas<Window>, font: &Font, position: Option<(i32, i32)>) {
+impl Default for StatusBar {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
+impl View for StatusBar {
+    fn draw(&mut self, canvas: &mut Canvas<Window>, fonts: &Fonts) {
         let (width, height) = canvas.window().size();
         canvas.set_draw_color(Color::GRAY);
         canvas
             .fill_rect(Rect::new(0, (height - HEIGHT) as i32, width, HEIGHT))
             .unwrap();
 
-        let position = position.unwrap_or(self.last_mouse_position);
-        self.last_mouse_position = position;
-        let text = format!("Mouse position: ({}, {})", position.0, position.1);
+        let text = format!("Mouse position: {:?}", self.last_mouse_position);
 
-        let surface = font
+        let surface = fonts
+            .get(14)
+            .unwrap()
             .render(&text)
             .shaded(Color::WHITE, Color::GRAY)
             .unwrap();
